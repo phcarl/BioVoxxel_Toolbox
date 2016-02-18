@@ -44,6 +44,8 @@ public class Interactive_Correlation_Plot implements PlugInFilter, MouseListener
 	Object snapshotBuffer;
 	Plot correlationPlot;
 	ImageCanvas imageCanvas;
+	String xLabel = "red";
+	String yLabel = "green";
 	int startX, startY, w, h;
 	int flags = DOES_RGB|SNAPSHOT|SUPPORTS_MASKING;
 	
@@ -62,20 +64,29 @@ public class Interactive_Correlation_Plot implements PlugInFilter, MouseListener
 	public void run(ImageProcessor ip) {
 		Rectangle roi = ip.getRoi();
 		imageRoi = ip.getMask();
-	    startX = roi.x;
+	    	startX = roi.x;
 		startY = roi.y;
 		w = roi.width;
 		h = roi.height;
 		ImagePlus copyOfRoi = imp.duplicate();
+	
+		if(IJ.isMacro() && Macro.getOptions() != null && !Macro.getOptions().trim().isEmpty()) {
+			processArgs(Macro.getOptions().trim());
+		}	
 		
-		
-		correlationPlot = new Plot("Plot of " + imp.getTitle(), "red", "green", Plot.X_TICKS|Plot.Y_TICKS|Plot.X_NUMBERS|Plot.Y_NUMBERS);
+		correlationPlot = new Plot("Plot of " + imp.getTitle(), xLabel, yLabel, Plot.X_TICKS|Plot.Y_TICKS|Plot.X_NUMBERS|Plot.Y_NUMBERS);
 		plotIMP = createPlot(copyOfRoi, imageRoi).getImagePlus();
 		plotIMP.show();
 		plotIMP.addImageListener(this);
 		ImageWindow win = plotIMP.getWindow();
 		imageCanvas = win.getCanvas();
 		imageCanvas.addMouseListener(this);
+	}
+	
+	private void processArgs(String str) {
+		String[] strParts = str.split(" ");
+		xLabel            = strParts[0];
+		yLabel            = strParts[1];
 	}
 	
 	public Plot createPlot(ImagePlus inputImage, ImageProcessor inputSelection) {
